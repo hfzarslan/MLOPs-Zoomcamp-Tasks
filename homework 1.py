@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[6]:
+# In[1]:
 
 
 import pandas as pd
@@ -12,7 +12,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics import mean_squared_error
 
 
-# In[20]:
+# In[2]:
 
 
 def read_dataframe(filename, data_t):
@@ -41,107 +41,81 @@ def read_dataframe(filename, data_t):
     return df
 
 
-# In[21]:
+# In[3]:
 
 
 df_train = read_dataframe('fhv_tripdata_2021-01.parquet', data_t='januray')
 df_val = read_dataframe('fhv_tripdata_2021-02.parquet', data_t='feb')
 
 
-# In[22]:
+# In[4]:
 
 
 df_train['PUlocationID'].dtype
 
 
-# In[25]:
+# In[5]:
 
 
-df_train = pd.concat([pd.get_dummies(df_train[['PUlocationID', 'DOlocationID']]), df_train[['duration']]], axis=1)
+dv = DictVectorizer()
+
+train_dicts = df_train[['PUlocationID', 'DOlocationID']].to_dict(orient='records')
+X_train = dv.fit_transform(train_dicts)
+
+val_dicts = df_val[['PUlocationID', 'DOlocationID']].to_dict(orient='records')
+X_val = dv.transform(val_dicts)
 
 
-# In[32]:
-
-
-df_train.columns
-
-
-# In[27]:
-
-
-df_val = pd.concat([pd.get_dummies(df_val[['PUlocationID', 'DOlocationID']]), df_val[['duration']]], axis=1)
-
-
-# In[33]:
-
-
-df_val.columns
-
-
-# In[34]:
-
-
-[x for x in df_val if x not in df_train]
-
-
-# In[35]:
-
-
-df_val.drop(columns=['DOlocationID_110.0'], inplace=True)
-
-
-# In[37]:
-
-
-df_train.shape
-
-
-# In[38]:
-
-
-df_val.shape
-
-
-# In[39]:
-
-
-y_train =df_train['duration'].values
-X_train = df_train.drop(columns=['duration'])
-
-
-# In[40]:
-
-
-y_val =df_val['duration'].values
-X_val = df_val.drop(columns=['duration'])
-
-
-# In[41]:
+# In[6]:
 
 
 X_train.shape
 
 
-# In[42]:
+# In[25]:
+
+
+# df_train = pd.concat([pd.get_dummies(df_train[['PUlocationID', 'DOlocationID']]), df_train[['duration']]], axis=1)
+
+
+# In[27]:
+
+
+# df_val = pd.concat([pd.get_dummies(df_val[['PUlocationID', 'DOlocationID']]), df_val[['duration']]], axis=1)
+
+
+# In[8]:
 
 
 X_val.shape
 
 
-# In[43]:
+# In[9]:
+
+
+y_train =df_train['duration'].values
+
+
+# In[10]:
+
+
+y_val =df_val['duration'].values
+
+
+# In[11]:
 
 
 lr = LinearRegression()
 lr.fit(X_train, y_train)
 
 
-# In[44]:
+# In[12]:
 
 
 y_pred = lr.predict(X_train)
 
 
-# In[45]:
+# In[13]:
 
 
 rms = mean_squared_error(y_train, y_pred, squared=False)
@@ -154,13 +128,13 @@ print('Train RMSE', rms)
 
 
 
-# In[46]:
+# In[14]:
 
 
 y_pred = lr.predict(X_val)
 
 
-# In[47]:
+# In[15]:
 
 
 rms = mean_squared_error(y_val, y_pred, squared=False)
